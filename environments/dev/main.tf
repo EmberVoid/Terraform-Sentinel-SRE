@@ -41,13 +41,13 @@ module "dev_network" {
 }
 
 ## 3. Instantiate the Windows VM Module and chain the outputs
-module "dev_win_vm" {
+module "WinSer1-VM-Dev" {
   source              = "../../modules/vm_windows"
   vm_name             = "WinSer1-VM-Dev"
   vm_size             = "Standard_B2als_v2"
   
   admin_username      = "sentineladmin"
-  admin_password      = var.dev_win_vm_admin_password
+  admin_password      = var.WinSer1-VM-Dev_admin_password
 
   # CHAINED OUTPUTS
   # From dev_rg module
@@ -59,7 +59,7 @@ module "dev_win_vm" {
 }
 
 ## 3.1. Instantiate the Ubuntu VM Module and chain the outputs
-module "dev_ubuntu_vm" {
+module "UbuDoc1-VM-Dev" {
   source              = "../../modules/vm_ubuntu"
   vm_name             = "UbuDoc1-VM-Dev"
   vm_size             = "Standard_B2als_v2"
@@ -74,4 +74,12 @@ module "dev_ubuntu_vm" {
 
   # From dev_network Module
   subnet_id           = module.dev_network.subnet_id 
+}
+
+output "Public_IP_WinSer1_VM_Dev" {
+  value = "${module.WinSer1-VM-Dev.vm_id} : ${module.WinSer1-VM-Dev.public_ip}"
+}
+
+output "Public_IP_UbuDoc1_VM_Dev" {
+  value = "${module.UbuDoc1-VM-Dev.vm_id} : ${module.UbuDoc1-VM-Dev.public_ip}"
 }

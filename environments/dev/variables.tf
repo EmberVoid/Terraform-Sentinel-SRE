@@ -10,7 +10,7 @@ variable "client_ip" {
   sensitive   = true
 }
 
-variable "dev_win_vm_admin_password" {
+variable "WinSer1-VM-Dev_admin_password" {
   type        = string
   description = "Admin password for the Windows VM"
   sensitive   = true
