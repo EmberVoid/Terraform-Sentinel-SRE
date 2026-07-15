@@ -17,8 +17,8 @@ provider "azurerm" {
 
 ## 1. Instantiate the Resource Group Module
 module "dev_rg" {
-  source  = "../../modules/resource_group"
-  rg_name = "rg-dev-Sentinel-WUS3-01"
+  source   = "../../modules/resource_group"
+  rg_name  = "rg-dev-Sentinel-WUS3-01"
   location = "westus3"
   tags = {
     Environment = "Dev"
@@ -28,13 +28,13 @@ module "dev_rg" {
 
 ## 2. Create the Networking infrastructure
 module "dev_network" {
-  source            = "../../modules/network"
-  vnet_name         = "vnet-dev-Sentinel-WUS3-01"
-  address_space     = ["10.123.0.0/16"]
-  subnet_name       = "dev-subnet"
-  subnet_prefix     = "10.123.1.0/24"
-  client_ip         = var.client_ip
-  
+  source        = "../../modules/network"
+  vnet_name     = "vnet-dev-Sentinel-WUS3-01"
+  address_space = ["10.123.0.0/16"]
+  subnet_name   = "dev-subnet"
+  subnet_prefix = "10.123.1.0/24"
+  client_ip     = var.client_ip
+
   # CHAINED OUTPUTS
   resource_group_name = module.dev_rg.name
   location            = module.dev_rg.location
@@ -42,12 +42,12 @@ module "dev_network" {
 
 ## 3. Instantiate the Windows VM Module and chain the outputs
 module "WinSer1-VM-Dev" {
-  source              = "../../modules/vm_windows"
-  vm_name             = "WinSer1-VM-Dev"
-  vm_size             = "Standard_B2als_v2"
-  
-  admin_username      = "sentineladmin"
-  admin_password      = var.WinSer1-VM-Dev_admin_password
+  source  = "../../modules/vm_windows"
+  vm_name = "WinSer1-VM-Dev"
+  vm_size = "Standard_B2als_v2"
+
+  admin_username = "sentineladmin"
+  admin_password = var.WinSer1-VM-Dev_admin_password
 
   # CHAINED OUTPUTS
   # From dev_rg module
@@ -55,17 +55,17 @@ module "WinSer1-VM-Dev" {
   location            = module.dev_rg.location
 
   # From dev_network Module
-  subnet_id           = module.dev_network.subnet_id 
+  subnet_id = module.dev_network.subnet_id
 }
 
 ## 3.1. Instantiate the Ubuntu VM Module and chain the outputs
 module "UbuDoc1-VM-Dev" {
-  source              = "../../modules/vm_ubuntu"
-  vm_name             = "UbuDoc1-VM-Dev"
-  vm_size             = "Standard_B2als_v2"
-  
-  admin_username      = "sendockadmin"
-  pub_key             = var.pub_key
+  source  = "../../modules/vm_ubuntu"
+  vm_name = "UbuDoc1-VM-Dev"
+  vm_size = "Standard_B2als_v2"
+
+  admin_username = "sendockadmin"
+  pub_key        = var.pub_key
 
   # CHAINED OUTPUTS
   # From dev_rg module
@@ -73,7 +73,7 @@ module "UbuDoc1-VM-Dev" {
   location            = module.dev_rg.location
 
   # From dev_network Module
-  subnet_id           = module.dev_network.subnet_id 
+  subnet_id = module.dev_network.subnet_id
 }
 
 output "Public_IP_WinSer1_VM_Dev" {
@@ -86,9 +86,9 @@ output "Public_IP_UbuDoc1_VM_Dev" {
 
 ## 4. Deploy the Log Analytics Workspace
 module "dev_law" {
-  source              = "../../modules/log_analytics"
-  law_name            = "law-dev-Sentinel-WUS3"
-  
+  source   = "../../modules/log_analytics"
+  law_name = "law-dev-Sentinel-WUS3"
+
   # CHAINED OUTPUTS
   resource_group_name = module.dev_rg.name
   location            = module.dev_rg.location
