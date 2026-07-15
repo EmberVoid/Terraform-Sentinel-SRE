@@ -1,5 +1,7 @@
 ## Provider and Terraform configuration
 terraform {
+  required_version = ">= 1.15.8" # TFLint checks this constraint
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
