@@ -83,5 +83,3 @@ output "Public_IP_WinSer1_VM_Dev" {
 output "Public_IP_UbuDoc1_VM_Dev" {
   value = "${module.UbuDoc1-VM-Dev.vm_id} : ${module.UbuDoc1-VM-Dev.public_ip}"
 }
-
-#Small change to test the GitHub Actions workflow for Terraform Apply with required reviewers.
