@@ -1,7 +1,7 @@
 variable "subscription_id" {
   type        = string
   description = "Azure subscription ID"
-  sensitive   = true          # hide it from plan output & logs
+  sensitive   = true # hide it from plan output & logs
 }
 
 variable "client_ip" {
