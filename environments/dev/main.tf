@@ -1,6 +1,6 @@
 ## Provider and Terraform configuration
 terraform {
-  required_version = ">= 1.15.8" # TFLint checks this constraint
+  required_version = ">= 1.9.0" # TFLint checks this constraint
 
   required_providers {
     azurerm = {
