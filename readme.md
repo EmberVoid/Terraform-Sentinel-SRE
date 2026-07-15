@@ -124,13 +124,13 @@ az ad app federated-credential create `
 az ad app federated-credential create `
   --id $APP_ID `
   --parameters '{
-    "name": "sentinel-sre-main-branch",
+    "name": "sentinel-sre-env-dev",
     "issuer": "https://token.actions.githubusercontent.com",
-    "subject": "repo:EmberVoid/Terraform-Sentinel-SRE:ref:refs/heads/main",
+    "subject": "repo:EmberVoid/Terraform-Sentinel-SRE:environment:dev",
     "audiences": ["api://AzureADTokenExchange"]
   }'
 ```
-> **Note 3:** The subject field is the important bit — it's a strict match. If you later use GitHub Environments (Part 8), the subject format changes to repo:OWNER/REPO:environment:NAME, so keep that in mind if you tighten this further
+> **Note 3:** The subject field is the important bit — it's a strict match. If you later use GitHub Environments, the subject format changes to repo:OWNER/REPO:environment:NAME, so keep that in mind if you tighten this further
 
 **6. Trust GitHub via Federated Credentials**:
 In your repo: Settings → Secrets and variables → Actions → New repository secret. Add:
