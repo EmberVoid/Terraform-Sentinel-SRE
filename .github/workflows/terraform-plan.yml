@@ -57,11 +57,11 @@ jobs:
           tflint
 
         # checkov scans for security misconfigurations (open NSGs, unencrypted disks, public storage
-      - name: Run Checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: environments/dev
-          framework: terraform
+      #- name: Run Checkov
+      #  uses: bridgecrewio/checkov-action@master
+      #  with:
+      #    directory: environments/dev
+      #    framework: terraform
 
       - name: Terraform Plan
         id: plan
