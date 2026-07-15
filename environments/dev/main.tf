@@ -84,4 +84,12 @@ output "Public_IP_UbuDoc1_VM_Dev" {
   value = "${module.UbuDoc1-VM-Dev.vm_id} : ${module.UbuDoc1-VM-Dev.public_ip}"
 }
 
-#Small change to test the GitHub Actions workflow for Terraform Plan and Apply
+## 4. Deploy the Log Analytics Workspace
+module "dev_law" {
+  source              = "../../modules/log_analytics"
+  law_name            = "law-dev-Sentinel-WUS3"
+  
+  # CHAINED OUTPUTS
+  resource_group_name = module.dev_rg.name
+  location            = module.dev_rg.location
+} 
