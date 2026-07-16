@@ -17,7 +17,7 @@ variable "kind" {
   default     = null
 
   validation {
-    condition     = var.kind == null || contains(["Windows", "Linux", "AgentDirectToStore", "WorkspaceTransforms"], var.kind)
+    condition     = var.kind == null ? true : contains(["Windows", "Linux", "AgentDirectToStore", "WorkspaceTransforms"], var.kind)
     error_message = "kind must be one of Windows, Linux, AgentDirectToStore, WorkspaceTransforms, or null."
   }
 }
