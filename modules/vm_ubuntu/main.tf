@@ -36,7 +36,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
   admin_ssh_key {
     username   = "sendockadmin"
     public_key = var.pub_key
-  }  
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
 
   os_disk {
     caching              = "ReadWrite"
