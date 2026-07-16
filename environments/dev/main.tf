@@ -203,5 +203,4 @@ module "dcr_sentinel_syslog_cef" {
       log_levels     = var.cef_log_levels
     }
   ]
-
 }
