@@ -94,4 +94,12 @@ module "dev_law" {
   # CHAINED OUTPUTS
   resource_group_name = module.dev_rg.name
   location            = module.dev_rg.location
-} 
+}
+
+## 4. Deploy Sentinel and configure the Activity Log to stream to the Log Analytics Workspace
+module "sentinel" {
+  source          = "../../modules/sentinel"
+  law_id          = module.dev_law.law_id
+  subscription_id = var.subscription_id
+  location        = module.dev_rg.location
+}
