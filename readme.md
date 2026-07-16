@@ -97,14 +97,28 @@ $TENANT_ID=$(az account show --query tenantId -o tsv)
 az ad sp create-for-rbac --name $APP_NAME --role Contributor --scopes "/subscriptions/$SUBSCRIPTION_ID"
 #Write down the details
 
-#Get AppID:
+#Get AppID for later steps:
 $APP_ID=$(az ad app list --display-name $APP_NAME --query "[0].appId" -o tsv)
+
+#I also suggest writing down the objectId, appId and displayName, it can be very handy when troubleshooting future issues.
+az ad sp show --id $APP_ID --query "{objectId:id, appId:appId, displayName:displayName}"
+
+#And granting the App/Service Principal the Resource Policy Contributor and Role Based Access Control Administrator since we'll need it later:
+az role assignment create `
+  --assignee $APP_ID `
+  --role "Resource Policy Contributor" `
+  --scope "/subscriptions/$SUBSCRIPTION_ID"
+
+az role assignment create `
+  --assignee $APP_ID `
+  --role "Role Based Access Control Administrator" `
+  --scope "/subscriptions/$SUBSCRIPTION_ID"
 
 # Get your subscription and tenant IDs — you'll need these as GitHub secrets
 echo "Subscription ID: $SUBSCRIPTION_ID"
 echo "Tenant ID: $TENANT_ID"
 ```
-> **Note 1:** For the time we are giving contributor access at the sub level, as we can't give it to the RG level as it does not exit yet. Microsoft Sentinel onboarding needs Microsoft Sentinel Contributor in addition to plain Contributor, we'll change it later
+> **Note 1:** For the time we are giving contributor access at the sub level, as we can't give it to the RG level as it does not exit yet. Plus during Microsoft Sentinel deployment we'll need the Resource Policy Contributor at a Sub level.
 
 **6. Trust GitHub via Federated Credentials**:
 We need two federated credentials: one for pull requests (plan) and one for the main branch (apply).
@@ -130,7 +144,7 @@ az ad app federated-credential create `
     "audiences": ["api://AzureADTokenExchange"]
   }'
 ```
-> **Note 3:** The subject field is the important bit — it's a strict match. If you later use GitHub Environments, the subject format changes to repo:OWNER/REPO:environment:NAME, so keep that in mind if you tighten this further
+> **Note 2:** The subject field is the important bit — it's a strict match. If you later use GitHub Environments, the subject format changes to repo:OWNER/REPO:environment:NAME, so keep that in mind if you tighten this further
 
 **6. Trust GitHub via Federated Credentials**:
 In your repo: Settings → Secrets and variables → Actions → New repository secret. Add:
