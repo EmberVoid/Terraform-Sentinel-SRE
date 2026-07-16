@@ -34,6 +34,10 @@ resource "azurerm_windows_virtual_machine" "vm" {
     azurerm_network_interface.nic.id,
   ]
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "StandardSSD_LRS"
