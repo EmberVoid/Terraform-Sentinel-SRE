@@ -204,3 +204,49 @@ module "dcr_sentinel_syslog_cef" {
     }
   ]
 }
+
+## 7. Deploy the Policy Assignment for auto-associating DCRs to VMs
+module "policy_install_ama" {
+  source = "../../modules/policy_install_ama"
+
+  # CHAINED OUTPUTS
+  scope    = module.dev_rg.id
+  location = module.dev_rg.location
+}
+
+module "dcr_associations" {
+  source = "../../modules/policy_dcr_association"
+
+  # CHAINED OUTPUTS
+  scope    = module.dev_rg.id
+  location = module.dev_rg.location
+
+  assignments = [
+    {
+      key             = "perf-linux"
+      display_name    = "Associate Linux VMs with dcr_all_os_vm_perf"
+      dcr_resource_id = module.dcr_all_os_vm_perf.dcr_id
+      os_type         = "Linux"
+    },
+    {
+      key             = "perf-windows"
+      display_name    = "Associate Windows VMs with dcr_all_os_vm_perf"
+      dcr_resource_id = module.dcr_all_os_vm_perf.dcr_id
+      os_type         = "Windows"
+    },
+    {
+      key             = "security-windows"
+      display_name    = "Associate Windows VMs with dcr_sentinel_windows_security"
+      dcr_resource_id = module.dcr_sentinel_windows_security.dcr_id
+      os_type         = "Windows"
+    },
+    {
+      key             = "syslog-linux"
+      display_name    = "Associate Linux VMs with dcr_sentinel_syslog_cef"
+      dcr_resource_id = module.dcr_sentinel_syslog_cef.dcr_id
+      os_type         = "Linux"
+    }
+  ]
+
+  depends_on = [module.policy_install_ama]
+}

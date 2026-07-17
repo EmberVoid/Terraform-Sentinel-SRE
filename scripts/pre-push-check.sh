@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+clear
 set -e  # stop on first failure
 
 cd ../environments/dev
