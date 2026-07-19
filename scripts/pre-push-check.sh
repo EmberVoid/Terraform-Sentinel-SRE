@@ -2,22 +2,38 @@
 clear
 set -e  # stop on first failure
 
-cd ../environments/dev
+#!/usr/bin/env bash
+clear
+set -e
 
-echo "==> terraform fmt"
-terraform fmt -recursive ..   # fixes formatting across modules + environments
+echo "==> terraform fmt (repo-wide)"
+terraform fmt -recursive ..
 
-echo "==> terraform init"
-terraform init -backend=false   # -backend=false skips remote state/auth for a quick local check
+for ENV_DIR in ../environments/*/; do
+  ENV=$(basename "$ENV_DIR")
+  echo ""
+  echo "========================================================="
+  echo "========> Checking environment: ${ENV}"
+  echo "========================================================="
 
-echo "==> terraform validate"
-terraform validate
+  (
+    cd "$ENV_DIR"
 
-echo "==> tflint"
-tflint --init
-tflint --recursive
+    echo "==> terraform init (${ENV})"
+    terraform init -backend=false
 
-#echo "==> checkov"
-#checkov -d . --framework terraform
+    echo "==> terraform validate (${ENV})"
+    terraform validate
 
-echo "All checks passed ✅ Continue with commit and push."
+    echo "==> tflint (${ENV})"
+    tflint --init
+    tflint --recursive
+
+    #echo "==> checkov (${ENV})"
+    #echo "==> checkov"
+    #checkov -d . --framework terraform
+  )
+done
+
+echo ""
+echo "All checks passed across all environments ✅"

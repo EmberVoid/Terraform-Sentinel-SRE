@@ -8,7 +8,7 @@ variable "subscription_id" {
 variable "rg_name" {
   type        = string
   description = "Resource group name"
-  default     = "rg-dev-Sentinel-WUS3-01"
+  default     = "rg-local-Sentinel-WUS3-01"
 }
 
 variable "environment" {
@@ -21,13 +21,13 @@ variable "environment" {
 variable "vnet_name" {
   type        = string
   description = "Virtual network name"
-  default     = "vnet-dev-Sentinel-WUS3-01"
+  default     = "vnet-local-Sentinel-WUS3-01"
 }
 
 variable "subnet_name" {
   type        = string
   description = "Subnet name"
-  default     = "subnet-dev-Sentinel-WUS3-01"
+  default     = "subnet-local-Sentinel-WUS3-01"
 }
 
 variable "client_ip" {

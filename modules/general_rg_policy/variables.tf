@@ -1,25 +1,25 @@
-variable "name" { 
-  type = string 
+variable "name" {
+  type = string
 }
 
 variable "display_name" {
-  type = string 
+  type = string
 }
 
 variable "policy_definition_id" {
-  type = string 
+  type = string
 }
 
 variable "scope" {
-  type = string 
+  type = string
 }
 
 variable "location" {
-  type = string 
+  type = string
 }
 
 variable "parameters" {
-  type = string 
+  type = string
 }
 
 variable "role_definitions" {

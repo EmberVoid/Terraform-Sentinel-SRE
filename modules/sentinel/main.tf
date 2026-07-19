@@ -11,7 +11,7 @@ data "azurerm_policy_definition" "activity_log_to_law" {
 
 # 3. Policy assignment
 resource "azurerm_subscription_policy_assignment" "activity_log" {
-  name                 = "activity-log-to-law"     # short, must be ≤64 chars
+  name                 = "activity-log-to-law" # short, must be ≤64 chars
   display_name         = "Configure Azure Activity logs to stream to specified Log Analytics workspace"
   policy_definition_id = data.azurerm_policy_definition.activity_log_to_law.id
   subscription_id      = "/subscriptions/${var.subscription_id}"
@@ -28,7 +28,7 @@ resource "azurerm_subscription_policy_assignment" "activity_log" {
 resource "azurerm_role_assignment" "activity_log_policy_identity" {
   scope                = "/subscriptions/${var.subscription_id}"
   role_definition_name = "Log Analytics Contributor"
-  principal_id          = azurerm_subscription_policy_assignment.activity_log.identity[0].principal_id
+  principal_id         = azurerm_subscription_policy_assignment.activity_log.identity[0].principal_id
 }
 
 # 5. Remediation block

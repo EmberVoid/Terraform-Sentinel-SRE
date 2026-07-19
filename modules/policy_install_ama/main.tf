@@ -13,7 +13,7 @@ module "ama_linux" {
   scope                = var.scope
   location             = var.location
 
-  parameters = jsonencode({ effect = { value = var.effect } })
+  parameters       = jsonencode({ effect = { value = var.effect } })
   role_definitions = ["Virtual Machine Contributor"]
 }
 
@@ -27,6 +27,6 @@ module "ama_windows" {
   scope                = var.scope
   location             = var.location
 
-  parameters = jsonencode({ effect = { value = var.effect } })
+  parameters       = jsonencode({ effect = { value = var.effect } })
   role_definitions = ["Virtual Machine Contributor"]
 }

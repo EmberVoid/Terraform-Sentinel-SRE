@@ -43,17 +43,17 @@ variable "data_flows" {
     streams            = list(string)
     output_stream      = optional(string)
     transform_kql      = optional(string)
-    built_in_transform  = optional(string)
+    built_in_transform = optional(string)
   }))
 }
 
 variable "performance_counters" {
   description = "Performance counter data sources."
   type = list(object({
-    name                           = string
-    streams                        = list(string)
-    sampling_frequency_in_seconds  = number
-    counter_specifiers             = list(string)
+    name                          = string
+    streams                       = list(string)
+    sampling_frequency_in_seconds = number
+    counter_specifiers            = list(string)
   }))
   default = []
 }
