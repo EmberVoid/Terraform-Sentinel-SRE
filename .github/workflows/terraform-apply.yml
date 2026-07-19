@@ -22,6 +22,10 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_USE_OIDC: true
+      TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_client_ip: ${{ secrets.CLIENT_IP }}
+      TF_VAR_WinSer1_VM_admin_password: ${{ secrets.WIN_ADMIN_PASSWORD }}
+      TF_VAR_pub_key: ${{ secrets.SSH_PUB_KEY }}
     defaults:
       run:
         working-directory: environments/dev
@@ -43,8 +47,4 @@ jobs:
 
       - name: Terraform Apply
         run: |
-          terraform apply -auto-approve -input=false \
-            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="client_ip=${{ secrets.CLIENT_IP }}" \
-            -var="WinSer1_VM_admin_password=${{ secrets.WIN_ADMIN_PASSWORD }}" \
-            -var="pub_key=${{ secrets.SSH_PUB_KEY }}"
+          terraform apply -auto-approve -input=false
