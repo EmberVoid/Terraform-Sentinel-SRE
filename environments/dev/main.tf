@@ -45,7 +45,7 @@ module "network" {
 ## 3. Instantiate the Windows VM Module and chain the outputs
 module "WinSer1_VM" {
   source  = "../../modules/vm_windows"
-  vm_name = "WinSer1_VM"
+  vm_name = var.WinSer1_VM
   vm_size = "Standard_B2als_v2"
 
   admin_username = "sentineladmin"
@@ -63,7 +63,7 @@ module "WinSer1_VM" {
 ## 3.1. Instantiate the Ubuntu VM Module and chain the outputs
 module "UbuDoc1_VM" {
   source  = "../../modules/vm_ubuntu"
-  vm_name = "UbuDoc1_VM"
+  vm_name = var.UbuDoc1_VM
   vm_size = "Standard_B2als_v2"
 
   admin_username = "sendockadmin"
@@ -78,18 +78,18 @@ module "UbuDoc1_VM" {
   subnet_id = module.network.subnet_id
 }
 
-output "Public_IP_WinSer1_VM_" {
+output "Public_IP_WinSer1_VM" {
   value = "${module.WinSer1_VM.vm_id} : ${module.WinSer1_VM.public_ip}"
 }
 
-output "Public_IP_UbuDoc1_VM_" {
+output "Public_IP_UbuDoc1_VM" {
   value = "${module.UbuDoc1_VM.vm_id} : ${module.UbuDoc1_VM.public_ip}"
 }
 
 ## 4. Deploy the Log Analytics Workspace
 module "law" {
   source   = "../../modules/log_analytics"
-  law_name = "law--Sentinel-WUS3"
+  law_name = var.law_name
 
   # CHAINED OUTPUTS
   resource_group_name = module.rg.name
@@ -250,3 +250,4 @@ module "dcr_associations" {
 
   depends_on = [module.policy_install_ama]
 }
+#

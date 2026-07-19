@@ -7,6 +7,7 @@ on:
       - "environments/**"
       - "modules/**"
       - "*.tf"
+      - ".github/workflows/**"
 
 permissions:
   id-token: write
