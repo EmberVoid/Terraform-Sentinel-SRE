@@ -16,7 +16,7 @@ permissions:
 jobs:
   apply:
     runs-on: ubuntu-latest
-    environment: dev   # <- this is what triggers the required-reviewer pause
+    environment: dev   # <- this is what triggers the required-reviewer pause (and which secrets are available to the job)
     env:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
