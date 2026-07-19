@@ -45,5 +45,5 @@ jobs:
           terraform apply -auto-approve -input=false \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             -var="client_ip=${{ secrets.CLIENT_IP }}" \
-            -var="WinSer1-VM-Dev_admin_password=${{ secrets.WIN_ADMIN_PASSWORD }}" \
+            -var="WinSer1_VM_admin_password=${{ secrets.WIN_ADMIN_PASSWORD }}" \
             -var="pub_key=${{ secrets.SSH_PUB_KEY }}"
