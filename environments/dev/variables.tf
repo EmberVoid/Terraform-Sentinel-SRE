@@ -27,7 +27,7 @@ variable "vnet_name" {
 variable "subnet_name" {
   type        = string
   description = "Subnet name"
-  default     = "subnet-dev-Sentinel-WUS3-01"
+  default     = "dev-subnet"
 }
 
 variable "client_ip" {
@@ -43,13 +43,30 @@ variable "WinSer1_VM_admin_password" {
   sensitive   = true
 }
 
+variable "WinSer1_VM" {
+  type        = string
+  description = "Name of the Windows VM"
+  default     = "WinSer1-VM-Dev"
+}
+
+variable "UbuDoc1_VM" {
+  type        = string
+  description = "Name of the Ubuntu VM"
+  default     = "UbuDoc1-VM-Dev"
+}
+
 variable "pub_key" {
   type        = string
   description = "SSH public key to add to the VM"
   sensitive   = true
 }
 
-
+## 4. Log Analytics Workspace variables
+variable "law_name" {
+  type        = string
+  description = "Log Analytics Workspace name"
+  default     = "law-dev-Sentinel-WUS3"
+}
 
 
 
