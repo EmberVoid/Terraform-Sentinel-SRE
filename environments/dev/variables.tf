@@ -197,6 +197,13 @@ variable "windows_security_xpath_queries" {
   ]
 }
 
+variable "windows_sysmon_xpath_queries" {
+  type = list(string)
+  default = [
+    "Microsoft-Windows-Sysmon/Operational!*"
+  ]
+}
+
 # --- Syslog facilities (plain syslog, NOT used for CEF ices) ---
 variable "syslog_facilities" {
   type    = list(string)
