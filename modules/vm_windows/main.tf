@@ -4,7 +4,7 @@ resource "azurerm_public_ip" "pip" {
   location            = var.location
   resource_group_name = var.resource_group_name
   sku                 = "Basic"
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
 }
 
 # 2. Create the Network Interface Card (NIC)
