@@ -35,3 +35,7 @@ terraform.rc
 # OS‑specific files
 .DS_Store
 Thumbs.db
+
+#Ansible
+ansible/collections/
+ansible/.vault_pass

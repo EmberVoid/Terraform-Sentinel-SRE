@@ -36,6 +36,20 @@ resource "azurerm_network_security_rule" "rdp_rule" {
   network_security_group_name = azurerm_network_security_group.nsg.name
 }
 
+resource "azurerm_network_security_rule" "winrm_rule" {
+  name                        = "Dev-Allow-WinRM"
+  priority                    = 120
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "5986"
+  source_address_prefix       = var.client_ip
+  destination_address_prefix  = "*"
+  resource_group_name         = var.resource_group_name
+  network_security_group_name = azurerm_network_security_group.nsg.name
+}
+
 resource "azurerm_network_security_rule" "ssh_rule" {
   name                        = "Dev-Allow-SSH"
   priority                    = 110
