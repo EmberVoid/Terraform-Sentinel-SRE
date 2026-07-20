@@ -36,8 +36,9 @@ terraform.rc
 .DS_Store
 Thumbs.db
 
-# Ignore the last known IP file for scripts
+# Ignore the last known IP and environment variable files for local validation scripts
 /scripts/.last_known_ip
+/scripts/.env.local
 
 #Ansible
 ansible/collections/
