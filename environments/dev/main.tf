@@ -147,6 +147,10 @@ module "dcr_sentinel_windows_security" {
       output_stream = "Microsoft-SecurityEvent"
       # Optional example transform - drop noisy event IDs at ingestion:
       # transform_kql = "source | where EventID != 4688"
+    },
+    {
+      streams       = ["Microsoft-Event"]
+      output_stream = "Microsoft-Event"
     }
   ]
 
@@ -155,6 +159,11 @@ module "dcr_sentinel_windows_security" {
       name           = "WindowsSecurityEvents"
       streams        = ["Microsoft-SecurityEvent"]
       x_path_queries = var.windows_security_xpath_queries
+    },
+    {
+      name           = "SysmonOperational"
+      streams        = ["Microsoft-Event"]
+      x_path_queries = var.windows_sysmon_xpath_queries
     }
   ]
 }
