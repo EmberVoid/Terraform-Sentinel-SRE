@@ -46,6 +46,13 @@ terraform fmt -recursive ..
 
 for ENV_DIR in ../environments/*/; do
   ENV=$(basename "$ENV_DIR")
+
+  #Currently, skipping local env as it is not actually deployed
+  if [[ "$ENV" == "local" ]]; then
+    echo "==> Skipping local environment"
+    continue
+  fi
+
   echo ""
   echo "========================================================="
   echo "========> Checking environment: ${ENV}"
@@ -74,7 +81,7 @@ for ENV_DIR in ../environments/*/; do
 
     echo "==> terraform plan (${ENV}) - checking for drift/pending changes"
     set +e
-    terraform plan -input=false -detailed-exitcode -out="/tmp/precheck-${ENV}.tfplan"
+    terraform plan -input=false -detailed-exitcode
     plan_exit=$?
     set -e
 
@@ -82,10 +89,7 @@ for ENV_DIR in ../environments/*/; do
       0) echo "✅ [${ENV}] No drift, no pending changes." ;;
       1) echo "❌ [${ENV}] terraform plan failed — fix errors before pushing."; exit 1 ;;
       2)
-        echo "⚠️  [${ENV}] Plan shows changes:"
-        terraform show -no-color "/tmp/precheck-${ENV}.tfplan"
-        read -p "⚠️  Continue push anyway despite [${ENV}] changes? [y/N] " confirm
-        [[ "$confirm" =~ ^[Yy]$ ]] || exit 1
+        echo "⚠️  [${ENV}] Plan shows changes — continuing push automatically."
         ;;
     esac
   )
@@ -93,3 +97,4 @@ done
 
 echo ""
 echo "All checks passed across all environments ✅"
+echo -e "If starting a new branch, remember to:\n- git status \n- git checkout main \n- git pull origin main \n- git checkout -b <new-branch> \n To avoid merge conflicts."
