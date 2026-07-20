@@ -1,3 +1,8 @@
+output "admin_username" {
+  value       = azurerm_windows_virtual_machine.vm.admin_username
+  description = "The admin username configured for this VM"
+}
+
 output "vm_id" {
   value       = azurerm_windows_virtual_machine.vm.id
   description = "The resource ID of the created Windows VM"

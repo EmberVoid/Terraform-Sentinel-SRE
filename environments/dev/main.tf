@@ -78,14 +78,6 @@ module "UbuDoc1_VM" {
   subnet_id = module.network.subnet_id
 }
 
-output "Public_IP_WinSer1_VM" {
-  value = "${module.WinSer1_VM.vm_id} : ${module.WinSer1_VM.public_ip}"
-}
-
-output "Public_IP_UbuDoc1_VM" {
-  value = "${module.UbuDoc1_VM.vm_id} : ${module.UbuDoc1_VM.public_ip}"
-}
-
 ## 4. Deploy the Log Analytics Workspace
 module "law" {
   source   = "../../modules/log_analytics"

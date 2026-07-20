@@ -38,3 +38,4 @@ Thumbs.db
 
 #Ansible
 ansible/collections/
+ansible/.vault_pass

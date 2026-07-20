@@ -1,0 +1,6 @@
+ansible_user: sentineladmin
+ansible_password: "{{ vault_winser1_admin_password }}" # ansible-vault view inventory/group_vars/windows/vault.yml
+ansible_connection: winrm
+ansible_winrm_transport: basic
+ansible_port: 5986
+ansible_winrm_server_cert_validation: ignore

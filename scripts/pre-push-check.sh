@@ -25,6 +25,8 @@ for ENV_DIR in ../environments/*/; do
     echo "==> terraform validate (${ENV})"
     terraform validate
 
+    terraform output -json
+
     echo "==> tflint (${ENV})"
     tflint --init
     tflint --recursive
