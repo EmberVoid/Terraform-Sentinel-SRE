@@ -36,6 +36,9 @@ terraform.rc
 .DS_Store
 Thumbs.db
 
+# Ignore the last known IP file for scripts
+/scripts/.last_known_ip
+
 #Ansible
 ansible/collections/
 ansible/.vault_pass
