@@ -1,0 +1,13 @@
+---
+# handlers/main.yml
+
+- name: Copy fetched Sysmon config back to repo as audit lockfile
+  ansible.builtin.fetch:
+    src: "{{ sysmon_config_dest }}"
+    dest: "{{ sysmon_config_lockfile }}"
+    flat: true
+
+- name: Update Sysmon config on existing install
+  ansible.windows.win_command: >
+    "{{ sysmon_install_dir }}\{{ sysmon_exe_name }}" -c "{{ sysmon_config_dest }}"
+  when: sysmon_service_check.services | length > 0

@@ -1,0 +1,11 @@
+---
+# playbooks/site.yml
+#
+# Top-level playbook. Applies roles to their target host groups.
+
+- name: Configure Windows hosts
+  hosts: windows
+  gather_facts: false
+
+  roles:
+    - sysmon

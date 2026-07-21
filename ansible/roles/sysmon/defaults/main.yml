@@ -1,0 +1,15 @@
+---
+# --- Sysmon binary (Microsoft, Sysinternals) ---
+sysmon_download_url: "https://download.sysinternals.com/files/Sysmon.zip"
+sysmon_install_dir: "C:\\Sysmon"
+sysmon_exe_name: "Sysmon64.exe"
+
+# --- Sysmon config (SwiftOnSecurity, community — see README for rationale) ---
+sysmon_config_url: "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml"
+sysmon_config_dest: "{{ sysmon_install_dir }}\\sysmonconfig.xml"
+
+# --- Audit trail: local copy of last-fetched config, committed to repo ---
+sysmon_config_lockfile: "{{ role_path }}/files/sysmonconfig.lock.xml"
+
+# --- Service verification ---
+sysmon_service_name: "Sysmon64"

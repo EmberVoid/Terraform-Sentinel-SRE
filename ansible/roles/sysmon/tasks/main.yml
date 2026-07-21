@@ -1,0 +1,10 @@
+---
+# tasks/main.yml
+- name: Include Sysmon installation tasks
+  ansible.builtin.include_tasks: install.yml
+
+- name: Include Sysmon configuration tasks
+  ansible.builtin.include_tasks: configure.yml
+
+- name: Include Sysmon verification tasks
+  ansible.builtin.include_tasks: verify.yml
