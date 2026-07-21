@@ -81,3 +81,45 @@ against what Terraform's `TF_VAR_pub_key` provisioned.
 `~/.ssh/id_ed25519`. Diagnosed via `ssh -v` directly (bypassing Ansible) to see exactly
 which key was offered/rejected — worth reaching for `-v` earlier next time a
 publickey auth failure isn't self-explanatory.
+
+- **Lint extension false-positive: "role not found"**: the IDE's ansible-lint
+  extension runs its own internal syntax-check that doesn't reliably inherit
+  ansible.cfg's roles_path — it evaluates roles in list order and halts at
+  the first failure, so only the *first* role in a playbook's `roles:` list
+  ever shows this error (subsequent roles appear to pass, but were never
+  actually checked). Confirmed not a real problem: `ansible-lint roles/<role>/`
+  and `ansible-playbook <playbook> --syntax-check` (the real tools, run
+  directly) both correctly resolve roles via ansible.cfg's roles_path and
+  pass clean. Fix, if wanted: `set -Ux ANSIBLE_ROLES_PATH (pwd)/roles` —
+  but this is a machine-wide env var, not project-scoped, so it'll affect
+  any other Ansible projects on this machine too. Left unset; treating this
+  as a known, ignorable extension quirk instead.
+
+  - **`Set-PSRepository -Name PSGallery -InstallationPolicy Trusted` fails with
+  "NonInteractive mode" / NuGet provider error**: Windows Server 2022 doesn't
+  ship with the NuGet package provider pre-installed. The first PSGallery
+  interaction normally prompts to install it interactively — over WinRM
+  there's no one to answer the prompt, so it fails outright instead of
+  hanging. Fix: explicitly install NuGet first, non-interactively:
+  `Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force`
+  before any PSGallery/PowerShellGet task.
+
+- **`Install-AtomicRedTeam` not recognized immediately after running
+  `install-atomicredteam.ps1`**: the script only *defines* the
+  `Install-AtomicRedTeam` function — it doesn't call it. Running a .ps1
+  file directly executes it in a child scope, so any function it defines
+  disappears once the script finishes; the very next command can't find
+  it. Fix: dot-source the script (`. path\to\script.ps1`) instead of
+  invoking it directly — this runs it in the current scope, so the
+  function persists for the following `Install-AtomicRedTeam ...` call.
+
+  - **`.ansible-lint` config errors: "Additional properties are not allowed
+  ('roles_path' was unexpected)"** then **"None is not of type 'object'"**:
+  `roles_path` was mistakenly added to `.ansible-lint` (copying the
+  ansible.cfg pattern) — it's not a valid key in ansible-lint's config
+  schema at all. Removing the key but leaving only a comment/`---` marker
+  then failed differently, since an empty YAML document parses to `None`,
+  which also fails the schema (expects an object). Fix: delete the file
+  entirely — `.ansible-lint` isn't required to exist; ansible-lint falls
+  back to its own defaults with no config file present. `ansible.cfg`'s
+  `roles_path` was already sufficient on its own the whole time.

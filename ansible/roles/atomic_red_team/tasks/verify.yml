@@ -1,0 +1,14 @@
+---
+# tasks/verify.yml
+- name: Check Atomic Red Team atomics library freshness
+  ansible.windows.win_stat:
+    path: "{{ atomic_red_team_install_dir }}\\atomics"
+  register: atomic_red_team_freshness_check
+
+- name: Report atomics library last update
+  ansible.builtin.debug:
+    msg: >
+      Atomics library last updated:
+      {{ '%Y-%m-%d %H:%M UTC' | strftime(atomic_red_team_freshness_check.stat.lastwritetime, utc=true) }}
+      ({{ (((now(utc=true).timestamp() | int) - (atomic_red_team_freshness_check.stat.lastwritetime | int)) / 86400) | round(1) }} days ago)
+  when: atomic_red_team_freshness_check.stat.exists

@@ -1,0 +1,20 @@
+---
+# --- Atomic Red Team framework (Red Canary) ---
+atomic_red_team_install_dir: "C:\\AtomicRedTeam"
+
+# --- Techniques to run, in order. Test numbers are pinned deliberately —
+# some technique IDs contain multiple atomic tests, not all equally safe
+# (e.g. T1059.001 test 1 is "Mimikatz" — a credential-dumping simulation).
+# Only specific, individually-reviewed test numbers should be added here. ---
+atomic_red_team_techniques:
+  - technique: T1082      # System Information Discovery — systeminfo + registry query, read-only
+    test_numbers: "1"
+  - technique: T1059.001  # PowerShell — encoded command, prints a string, zero side effects
+    test_numbers: "17"
+
+# --- PowerShell module trust ---
+atomic_red_team_powershell_gallery_trusted: true
+
+# --- Atomics library refresh cadence ---
+atomic_red_team_update_interval_days: 7
+atomic_red_team_force_reinstall: false

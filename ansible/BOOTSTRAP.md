@@ -109,3 +109,9 @@ complete as of this version — `win_ping` and `ping` both succeed.
   **splitting into two subnets** (one per VM/OS), each with its own NSG and only the
   relevant rule(s) — a real topology change to `modules/network`, not a quick patch.
   Deferred to Stage 1 (hardening) rather than done ad hoc.
+
+  - **CI/CD for Ansible playbooks**: not yet automated (`ansible-playbook` still runs manually). Blocked on
+  the same NSG scoping issue above — a GitHub-hosted runner has no stable IP to allowlist for WinRM.
+  Would need either self-hosted runners inside the vnet, an Azure service-tag-based NSG rule, or a
+  bastion/private-networking approach, plus moving the vault password and Windows admin credentials
+  into GitHub Secrets. Deferred until Stage 2/3 telemetry work is further along.

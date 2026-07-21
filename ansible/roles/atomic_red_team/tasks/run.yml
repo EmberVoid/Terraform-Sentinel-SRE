@@ -1,0 +1,16 @@
+---
+# tasks/run.yml
+#
+# Executes the configured Atomic Red Team techniques. Test numbers are
+# pinned per technique in defaults/main.yml — see the comment there for why.
+
+- name: Run atomic technique
+  ansible.windows.win_shell: >
+    Import-Module "{{ atomic_red_team_install_dir }}\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1" -Force;
+    Invoke-AtomicTest {{ item.technique }} -TestNumbers {{ item.test_numbers }}
+    -PathToAtomicsFolder "{{ atomic_red_team_install_dir }}\atomics"
+  args:
+    executable: powershell
+  loop: "{{ atomic_red_team_techniques }}"
+  loop_control:
+    label: "{{ item.technique }}"
