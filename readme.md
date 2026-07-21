@@ -37,11 +37,36 @@ This repository contains **Terraform 4.1.0** code that provisions a minimal yet 
 │   └── workflows
 │       ├── terraform-apply.yml
 │       └── terraform-plan.yml
+├── ansible
+│   ├── ansible.cfg
+│   ├── BOOTSTRAP.md
+│   ├── Troubleshooting.md
+│   ├── inventory
+│   │   ├── group_vars
+│   │   │   ├── linux
+│   │   │   └── windows
+│   │   └── hosts.yml
+│   ├── playbooks
+│   │   └── site.yml
+│   ├── requirements.yml
+│   └── roles
+│       ├── atomic_red_team
+│       │   ├── defaults
+│       │   └── tasks
+│       └── sysmon
+│           ├── defaults
+│           ├── files
+│           ├── handlers
+│           └── tasks
 ├── environments
-│   └── dev
+│   ├── dev
+│   │   ├── backend.tf
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   └── local
 │       ├── backend.tf
 │       ├── main.tf
-│       ├── terraform.tfvars
 │       └── variables.tf
 ├── modules
 │   ├── dcr
@@ -56,7 +81,8 @@ This repository contains **Terraform 4.1.0** code that provisions a minimal yet 
 │   └── vm_windows
 ├── readme.md
 └── scripts
-    └── pre-push-check.sh
+    ├── pre-push-check.sh
+    └── update-client-ip.sh
 ```
 
 Module labels (e.g. `module "WinSer1_VM"`, `module "rg"`, `module "network"`) are environment-agnostic, since at the Terraform code level there's no need to differentiate by environment — the same module blocks are reused across `dev` and, eventually, `staging`/`prod`.
@@ -67,18 +93,18 @@ The actual Azure resource *names*, however, remain environment-specific (e.g. th
 
 ## Current Scope
 
-| Resource / Module | Purpose |
-|---|---|
-| `vm_windows` | Windows Server 2022 (small disk) for local experimentation |
-| `vm_ubuntu` | Ubuntu 24.04 LTS for Linux-side testing |
-| `log_analytics` | Central collection point for all telemetry |
-| `dcr` | Data Collection Rules: Performance Counters, Windows SecurityEvents, Syslog, and CEF (warning+) |
-| `sentinel` | Core Sentinel workspace for alerts & playbooks |
-| `policy_install_ama` | Azure Policy that installs the Azure Monitor Agent on in-scope VMs |
-| `policy_dcr_association` | Azure Policy that associates VMs with the correct DCRs |
-| `general_rg_policy` | Baseline resource group–level policy assignment |
-| `network` | VNet/subnet/NSG scaffolding for the VMs |
-| `resource_group` | Resource group provisioning |
+  | Resource / Module | Purpose |
+  |---|---|
+  | `vm_windows` | Windows Server 2022 (small disk) for local experimentation |
+  | `vm_ubuntu` | Ubuntu 24.04 LTS for Linux-side testing |
+  | `log_analytics` | Central collection point for all telemetry |
+  | `dcr` | Data Collection Rules: Performance Counters, Windows SecurityEvents, Syslog, and CEF (warning+) |
+  | `sentinel` | Core Sentinel workspace for alerts & playbooks |
+  | `policy_install_ama` | Azure Policy that installs the Azure Monitor Agent on in-scope VMs |
+  | `policy_dcr_association` | Azure Policy that associates VMs with the correct DCRs |
+  | `general_rg_policy` | Baseline resource group–level policy assignment |
+  | `network` | VNet/subnet/NSG scaffolding for the VMs |
+  | `resource_group` | Resource group provisioning |
 
 ---
 
@@ -224,10 +250,21 @@ Then set up a GitHub Environment for the apply gate: Settings → Environments �
 
 With provisioning complete, the project is moving into post-provisioning configuration management. Terraform remains scoped strictly to infrastructure; all in-guest configuration lives in Ansible. Planned in stages:
 
-- [ ] **Stage 0 — Scaffolding:** WinRM/SSH connectivity, dynamic inventory generated from Terraform outputs
+- [x] **Stage 0 — Scaffolding:** WinRM/SSH connectivity, dynamic inventory generated from Terraform outputs
 - [ ] **Stage 1 — Hardening:** SSH/RDP hardening aligned to CIS benchmarks
-- [ ] **Stage 2 — Windows telemetry:** Sysmon (community config), Atomic Red Team via `Invoke-AtomicRedTeam`, scheduled tasks for continuous data generation
+- [ ] **Stage 2 — Windows telemetry:**
+  - [x] Sysmon (SwiftOnSecurity config) — installed, configured, verified flowing into Sentinel
+  - [x] Atomic Red Team via `Invoke-AtomicRedTeam` — T1082, T1059.001 running, confirmed in Log Analytics
+  - [ ] Scheduled task for continuous/unattended data generation
 - [ ] **Stage 3 — Linux telemetry:** auditd, rsyslog/CEF forwarding matched to the existing Syslog/CEF DCRs, Linux atomics
+
+### Ansible Scope
+
+| Role / Component | Purpose |
+|---|---|
+| `inventory/` | Dynamic-from-Terraform-output inventory, WinRM (Windows) and SSH (Linux) connectivity |
+| `roles/sysmon` | Installs Sysmon with the SwiftOnSecurity community config, verified flowing into Sentinel |
+| `roles/atomic_red_team` | Installs Invoke-AtomicRedTeam + atomics library, runs pinned MITRE ATT&CK technique tests to generate realistic telemetry |
 
 ---
 

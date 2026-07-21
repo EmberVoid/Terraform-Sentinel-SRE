@@ -1,0 +1,10 @@
+---
+# tasks/main.yml
+- name: Include Atomic Red Team installation tasks
+  ansible.builtin.include_tasks: install.yml
+
+- name: Include Atomic Red Team technique execution tasks
+  ansible.builtin.include_tasks: run.yml
+
+- name: Include Atomic Red Team verification tasks
+  ansible.builtin.include_tasks: verify.yml

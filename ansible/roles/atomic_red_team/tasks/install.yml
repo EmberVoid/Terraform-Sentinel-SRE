@@ -1,0 +1,56 @@
+---
+# tasks/install.yml
+#
+# Installs the Invoke-AtomicRedTeam PowerShell module and the atomics
+# technique library (Red Canary). Two components, one combined installer.
+
+- name: Ensure Atomic Red Team install directory exists
+  ansible.windows.win_file:
+    path: "{{ atomic_red_team_install_dir }}"
+    state: directory
+
+- name: Ensure NuGet package provider is installed
+  ansible.windows.win_shell: >
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+  args:
+    executable: powershell
+
+- name: Trust PSGallery as a package source
+  ansible.windows.win_shell: >
+    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+  when: atomic_red_team_powershell_gallery_trusted
+
+- name: Download Atomic Red Team installer script
+  ansible.windows.win_get_url:
+    url: "https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1"
+    dest: "{{ atomic_red_team_install_dir }}\\install-atomicredteam.ps1"
+    force: true
+  register: atomic_red_team_installer_download
+
+- name: Check if Atomic Red Team atomics library already exists
+  ansible.windows.win_stat:
+    path: "{{ atomic_red_team_install_dir }}\\atomics"
+  register: atomic_red_team_atomics_check
+
+- name: Determine whether atomics library needs updating
+  ansible.builtin.set_fact:
+    atomic_red_team_needs_update: >-
+      {{
+        (not atomic_red_team_atomics_check.stat.exists) or
+        atomic_red_team_force_reinstall or
+        (((now(utc=true).timestamp() | int) - (atomic_red_team_atomics_check.stat.lastwritetime | int))
+          > (atomic_red_team_update_interval_days * 86400))
+      }}
+
+- name: Run Atomic Red Team installer (module + atomics library)
+  ansible.windows.win_shell: >
+    . "{{ atomic_red_team_install_dir }}\install-atomicredteam.ps1";
+    Install-AtomicRedTeam -InstallPath "{{ atomic_red_team_install_dir }}" -getAtomics -Force
+  args:
+    executable: powershell
+  when: atomic_red_team_needs_update
+  # The leading ". " (dot-source operator) runs the script in the current
+  # PowerShell scope rather than a child scope. Without it, the
+  # Install-AtomicRedTeam function this script defines would exist only for
+  # the life of the script itself and vanish before the next line could
+  # call it.
