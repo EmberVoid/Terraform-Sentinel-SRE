@@ -1,4 +1,5 @@
 ---
+# defaults/main.yml
 # --- Atomic Red Team framework (Red Canary) ---
 atomic_red_team_install_dir: "C:\\AtomicRedTeam"
 
@@ -18,3 +19,16 @@ atomic_red_team_powershell_gallery_trusted: true
 # --- Atomics library refresh cadence ---
 atomic_red_team_update_interval_days: 7
 atomic_red_team_force_reinstall: false
+
+# --- Unattended scheduled execution ---
+# Runs atomic_red_team_techniques on a repeating interval via win_scheduled_task,
+# independent of any Ansible session (the task calls run-atomics.ps1 directly).
+# start_when_available (set in schedule.yml) catches up a missed interval at next
+# boot — relevant since this host isn't powered on 24/7.
+# schedule_start_time requires a full ISO 8601 date+time (YYYY-MM-DDThh:mm:ss) —
+# the date is an arbitrary anchor in the past; only the time-of-day is meaningful
+# for a daily trigger with repetition.
+atomic_red_team_schedule_enabled: true
+atomic_red_team_schedule_task_name: "AtomicRedTeam-ScheduledRun"
+atomic_red_team_schedule_start_time: "2024-01-01T11:00:00"
+atomic_red_team_schedule_interval_hours: 5

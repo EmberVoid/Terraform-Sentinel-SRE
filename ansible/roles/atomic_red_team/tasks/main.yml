@@ -8,3 +8,6 @@
 
 - name: Include Atomic Red Team verification tasks
   ansible.builtin.include_tasks: verify.yml
+
+- name: Include Atomic Red Team scheduled task setup
+  ansible.builtin.include_tasks: schedule.yml

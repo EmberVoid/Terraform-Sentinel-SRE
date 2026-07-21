@@ -123,3 +123,101 @@ publickey auth failure isn't self-explanatory.
   entirely — `.ansible-lint` isn't required to exist; ansible-lint falls
   back to its own defaults with no config file present. `ansible.cfg`'s
   `roles_path` was already sufficient on its own the whole time.
+
+  ### Invoke-AtomicTest not recognized when run as SYSTEM (scheduled task)
+
+**Symptom:** `atomic_red_team` role installs and runs cleanly via Ansible
+(`run.yml`), but the scheduled task created in `schedule.yml` fails every
+time with:
+
+```
+The term 'Invoke-AtomicTest' is not recognized as the name of a cmdlet,
+function, script file, or operable program.
+```
+
+`Import-Module` on `Invoke-AtomicRedTeam.psd1` (absolute path) does not
+error — the module manifest loads. The exported function is simply never
+registered.
+
+**Cause:** `install-atomicredteam.ps1` installs its own dependency,
+`powershell-yaml` (used to parse atomic test YAML definitions), with:
+
+```powershell
+Install-Module -Name powershell-yaml -Scope CurrentUser -Force
+```
+
+`CurrentUser` scope puts the module in the profile of whichever account
+Ansible connected as over WinRM (e.g. `sentineladmin`). The scheduled
+task runs as `SYSTEM`, which has its own separate `$env:PSModulePath` and
+cannot see that profile. `Invoke-AtomicRedTeam` depends on
+`powershell-yaml` internally, so it silently fails to finish initializing
+and `Invoke-AtomicTest` is never exported — with no error at import time.
+
+Ad-hoc `win_shell` runs (`run.yml`) never hit this, because those execute
+in the WinRM connection's own user context, where `CurrentUser` scope is
+sufficient.
+
+**Fix:** Reinstall `powershell-yaml` at `AllUsers` scope after
+`install-atomicredteam.ps1` runs, gated on its own presence check —
+*not* on `atomic_red_team_needs_update` (that variable tracks atomics
+library freshness on a 7-day cycle; reusing it here means the fix
+silently doesn't run again until the next cache-refresh window):
+
+```yaml
+- name: Check if powershell-yaml is available machine-wide
+  ansible.windows.win_shell: >
+    [bool](Get-Module -ListAvailable -Name powershell-yaml | Where-Object Path -NotMatch '\\Users')
+  args:
+    executable: powershell
+  register: atomic_red_team_powershell_yaml_check
+  changed_when: false
+
+- name: Ensure powershell-yaml is available machine-wide (required for SYSTEM-context runs)
+  ansible.windows.win_shell: >
+    Install-Module -Name powershell-yaml -Scope AllUsers -Force
+  args:
+    executable: powershell
+  when: "'True' not in atomic_red_team_powershell_yaml_check.stdout"
+```
+
+**Verify:** Trigger the task manually and tail the log —
+`Start-ScheduledTask -TaskName "AtomicRedTeam-ScheduledRun"`, then check
+`C:\AtomicRedTeam\scheduled-run.log`. A successful run shows only the
+start/finish banners with nothing in between (`Invoke-AtomicTest`'s
+progress output goes to a stream `Out-File`/`2>&1` doesn't capture) and
+completes in several seconds rather than instantly — an immediate
+start-to-finish gap (<2s) with no output at all is the old failure mode,
+not success.
+
+---
+
+### `win_shell` fails to parse a PowerShell command ending a quoted string in a backslash
+
+**Symptom:** A `win_shell` task fails at the Ansible parsing stage
+(before the module ever runs) with:
+
+```
+failed at splitting arguments, either an unbalanced jinja2 block or quotes
+```
+
+...even though every quote and brace in the command is actually balanced.
+
+**Cause:** Ansible's free-form argument splitter (`split_args`) treats a
+backslash immediately before a closing quote as escaping that quote,
+regardless of quote type (`'` or `"`) or how many backslashes precede it.
+A PowerShell regex literal like `'\\Users\\'` — a perfectly valid pattern
+in PowerShell — reads to Ansible's parser as an unterminated string,
+because the last character before the final `'` is a `\`.
+
+Confirmed directly against `ansible.parsing.splitter.split_args`: strings
+ending `...\\'` fail regardless of surrounding content; the same string
+with the trailing backslash removed (`...\\'` → `...'`) parses cleanly.
+Curly braces (`{ }`) from PowerShell script blocks were suspected first
+but ruled out — they parse fine on their own.
+
+**Fix:** Never let a quoted string inside a `win_shell`/`win_command`
+one-liner end in a literal backslash. Where the match doesn't need to be
+anchored, drop the trailing backslash rather than escaping it — e.g.
+`-NotMatch '\\Users'` (substring match) instead of `'\\Users\\'`. If a
+trailing backslash is unavoidable, pad with an extra literal character
+after it inside the same quotes.
