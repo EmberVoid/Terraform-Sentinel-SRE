@@ -1,0 +1,38 @@
+---
+# tasks/install.yml
+#
+# Installs the Sysmon binary (Microsoft/Sysinternals). This task file is
+# only responsible for getting Sysmon64.exe onto disk — it does not apply
+# config or start the service (see configure.yml).
+
+- name: Ensure Sysmon install directory exists
+  ansible.windows.win_file:
+    path: "{{ sysmon_install_dir }}"
+    state: directory
+
+- name: Download Sysmon zip from Sysinternals
+  ansible.windows.win_get_url:
+    url: "{{ sysmon_download_url }}"
+    dest: "{{ sysmon_install_dir }}\\Sysmon.zip"
+  register: sysmon_download_result
+
+- name: Extract Sysmon zip
+  # win_unzip (community.windows) is not idempotent by design — it always
+  # extracts and reports "changed" regardless of whether the destination
+  # already has the extracted files. The `creates` guard below checks for
+  # Sysmon64.exe first and skips extraction if it's already present, so
+  # reruns don't falsely report a change every time.
+  community.windows.win_unzip:
+    src: "{{ sysmon_install_dir }}\\Sysmon.zip"
+    dest: "{{ sysmon_install_dir }}"
+    creates: "{{ sysmon_install_dir }}\\{{ sysmon_exe_name }}"
+
+- name: Confirm Sysmon64.exe exists after extraction
+  ansible.windows.win_stat:
+    path: "{{ sysmon_install_dir }}\\{{ sysmon_exe_name }}"
+  register: sysmon_binary_check
+
+- name: Fail if Sysmon64.exe is missing post-extraction
+  ansible.builtin.fail:
+    msg: "Sysmon64.exe not found at {{ sysmon_install_dir }} after extraction — check the zip contents or download URL."
+  when: not sysmon_binary_check.stat.exists

@@ -1,0 +1,43 @@
+---
+# tasks/verify.yml
+#
+# Confirms Sysmon is actually running and producing events. This is a
+# diagnostic checkpoint, not configuration — nothing here changes state.
+
+- name: Check Sysmon service state
+  ansible.windows.win_service_info:
+    name: "{{ sysmon_service_name }}"
+  register: sysmon_service_status
+
+- name: Fail if Sysmon service is not running
+  ansible.builtin.fail:
+    msg: >
+      Sysmon service '{{ sysmon_service_name }}' is not running as expected.
+      Check install.yml/configure.yml output above for errors.
+  when: >
+    sysmon_service_status.services | length == 0 or
+    sysmon_service_status.services[0].state != 'started'
+
+- name: Check for recent Sysmon Operational log entries
+  ansible.windows.win_shell: >
+    Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' -MaxEvents 1 |
+    Select-Object -ExpandProperty TimeCreated
+  register: sysmon_last_event
+  changed_when: false
+  failed_when: false
+
+- name: Report recent Sysmon event found
+  ansible.builtin.debug:
+    msg: "Sysmon service is running. Most recent event: {{ sysmon_last_event.stdout | trim }}"
+  when:
+    - sysmon_last_event.rc == 0
+    - sysmon_last_event.stdout | trim | length > 0
+
+- name: Report no Sysmon events found yet
+  ansible.builtin.debug:
+    msg: >
+      Sysmon service is running, but no events found yet in the Operational log.
+      This is expected immediately after a fresh install, before any activity has occurred.
+  when: >
+    sysmon_last_event.rc != 0 or
+    sysmon_last_event.stdout | trim | length == 0

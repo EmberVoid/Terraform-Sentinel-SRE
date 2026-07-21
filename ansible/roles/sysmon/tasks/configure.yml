@@ -1,0 +1,29 @@
+---
+# tasks/configure.yml
+#
+# Applies the SwiftOnSecurity config to Sysmon. Branches based on whether
+# this is a first-time install (-i, requires EULA acceptance, creates the
+# service) or an update to an existing install (-c, service already exists).
+
+# manual example:
+# ansible windows -m ansible.windows.win_service_info -a "name=Spooler"
+
+- name: Check whether the Sysmon service already exists
+  ansible.windows.win_service_info:
+    name: "{{ sysmon_service_name }}"
+  register: sysmon_service_check
+
+- name: Fetch latest SwiftOnSecurity Sysmon config to remote host
+  ansible.windows.win_get_url:
+    url: "{{ sysmon_config_url }}"
+    dest: "{{ sysmon_config_dest }}"
+    force: true
+  register: sysmon_config_download
+  notify:
+    - Copy fetched Sysmon config back to repo as audit lockfile
+    - Update Sysmon config on existing install
+
+- name: Install Sysmon (first-time install, accepts EULA, applies config)
+  ansible.windows.win_command: >
+    "{{ sysmon_install_dir }}\{{ sysmon_exe_name }}" -accepteula -i "{{ sysmon_config_dest }}"
+  when: sysmon_service_check.services | length == 0
