@@ -54,3 +54,18 @@
   # Install-AtomicRedTeam function this script defines would exist only for
   # the life of the script itself and vanish before the next line could
   # call it.
+
+- name: Check if powershell-yaml is available machine-wide
+  ansible.windows.win_shell: >
+    [bool](Get-Module -ListAvailable -Name powershell-yaml | Where-Object Path -NotMatch '\\Users')
+  args:
+    executable: powershell
+  register: atomic_red_team_powershell_yaml_check
+  changed_when: false
+
+- name: Ensure powershell-yaml is available machine-wide (required for SYSTEM-context runs)
+  ansible.windows.win_shell: >
+    Install-Module -Name powershell-yaml -Scope AllUsers -Force
+  args:
+    executable: powershell
+  when: "'True' not in atomic_red_team_powershell_yaml_check.stdout"

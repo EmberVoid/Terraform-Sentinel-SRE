@@ -1,0 +1,48 @@
+---
+# tasks/schedule.yml
+- name: Deploy the unattended atomic technique runner script
+  ansible.windows.win_template:
+    src: run-atomics.ps1.j2
+    dest: "{{ atomic_red_team_install_dir }}\\run-atomics.ps1"
+  when: atomic_red_team_schedule_enabled
+
+- name: Create scheduled task to run atomic techniques on an interval
+  community.windows.win_scheduled_task:
+    name: "{{ atomic_red_team_schedule_task_name }}"
+    description: >-
+      Runs pinned Atomic Red Team techniques on an interval for continuous
+      Sentinel telemetry generation. Managed by Ansible — do not edit manually.
+    actions:
+      - path: powershell.exe
+        arguments: >-
+          -ExecutionPolicy Bypass -NoProfile -File
+          "{{ atomic_red_team_install_dir }}\run-atomics.ps1"
+    triggers:
+      - type: daily
+        start_boundary: "{{ atomic_red_team_schedule_start_time }}"
+        repetition:
+          interval: "PT{{ atomic_red_team_schedule_interval_hours }}H"
+    username: SYSTEM
+    logon_type: service_account
+    run_level: highest
+    start_when_available: true
+    enabled: true
+    state: present
+  when: atomic_red_team_schedule_enabled
+  register: atomic_red_team_schedule_result
+
+- name: Check scheduled task creation and last-run state
+  community.windows.win_scheduled_task_stat:
+    name: "{{ atomic_red_team_schedule_task_name }}"
+  register: atomic_red_team_schedule_stat
+  when: atomic_red_team_schedule_enabled
+
+- name: Report scheduled task status
+  ansible.builtin.debug:
+    msg: >-
+      Scheduled task '{{ atomic_red_team_schedule_task_name }}' exists:
+      {{ atomic_red_team_schedule_stat.task_exists }}.
+      Last run: {{ atomic_red_team_schedule_stat.state.last_run_time | default('never') }},
+      last result code: {{ atomic_red_team_schedule_stat.state.last_task_result | default('n/a') }},
+      missed runs: {{ atomic_red_team_schedule_stat.state.number_of_missed_runs | default('n/a') }}.
+  when: atomic_red_team_schedule_enabled and atomic_red_team_schedule_stat.task_exists

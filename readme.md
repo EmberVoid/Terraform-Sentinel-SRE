@@ -252,10 +252,10 @@ With provisioning complete, the project is moving into post-provisioning configu
 
 - [x] **Stage 0 — Scaffolding:** WinRM/SSH connectivity, dynamic inventory generated from Terraform outputs
 - [ ] **Stage 1 — Hardening:** SSH/RDP hardening aligned to CIS benchmarks
-- [ ] **Stage 2 — Windows telemetry:**
+- [x] **Stage 2 — Windows telemetry:**
   - [x] Sysmon (SwiftOnSecurity config) — installed, configured, verified flowing into Sentinel
   - [x] Atomic Red Team via `Invoke-AtomicRedTeam` — T1082, T1059.001 running, confirmed in Log Analytics
-  - [ ] Scheduled task for continuous/unattended data generation
+  - [x] Scheduled task for continuous/unattended data generation
 - [ ] **Stage 3 — Linux telemetry:** auditd, rsyslog/CEF forwarding matched to the existing Syslog/CEF DCRs, Linux atomics
 
 ### Ansible Scope
@@ -264,7 +264,7 @@ With provisioning complete, the project is moving into post-provisioning configu
 |---|---|
 | `inventory/` | Dynamic-from-Terraform-output inventory, WinRM (Windows) and SSH (Linux) connectivity |
 | `roles/sysmon` | Installs Sysmon with the SwiftOnSecurity community config, verified flowing into Sentinel |
-| `roles/atomic_red_team` | Installs Invoke-AtomicRedTeam + atomics library, runs pinned MITRE ATT&CK technique tests to generate realistic telemetry |
+| `roles/atomic_red_team` | Installs Invoke-AtomicRedTeam + atomics library, runs pinned MITRE ATT&CK technique tests on a recurring schedule (unattended, SYSTEM context) to generate realistic telemetry |
 
 ---
 
