@@ -16,6 +16,6 @@ if [ "$CURRENT_IP" == "$CACHED_IP" ]; then
 fi
 
 echo "==> IP changed: ${CACHED_IP:-<none>} -> ${CURRENT_IP}, updating CLIENT_IP secret"
-gh secret set CLIENT_IP --body "${CURRENT_IP}/32"
+gh secret set CLIENT_IP --env dev --body "${CURRENT_IP}/32"
 echo "$CURRENT_IP" > "$CACHE_FILE"
 echo "==> Done. Re-run the apply workflow to apply the new IP to the NSG rules."
