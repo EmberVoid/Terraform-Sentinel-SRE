@@ -13,6 +13,10 @@ permissions:
   id-token: write
   contents: read
 
+concurrency:
+  group: terraform-dev-state
+  cancel-in-progress: false
+
 jobs:
   apply:
     runs-on: ubuntu-latest
