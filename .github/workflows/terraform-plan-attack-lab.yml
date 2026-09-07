@@ -1,0 +1,97 @@
+name: Terraform Plan (Attack Lab)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "environments/attack-lab/**"
+      - "modules/**"
+      - ".github/workflows/terraform-plan-attack-lab.yml"
+
+permissions:
+  id-token: write      # required for OIDC
+  contents: read
+  pull-requests: write # required to comment the plan on the PR
+
+concurrency:
+  group: terraform-attack-lab-state
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    environment: attack-lab
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_USE_OIDC: true
+      TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_client_ip: ${{ secrets.CLIENT_IP }}
+      TF_VAR_target_admin_password: ${{ secrets.ATTACKLAB_TARGET_ADMIN_PASSWORD }}
+      TF_VAR_pub_key: ${{ secrets.SSH_PUB_KEY }}
+      TF_VAR_law_id: ${{ secrets.DEV_LAW_ID }}
+    defaults:
+      run:
+        working-directory: environments/attack-lab
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.8"   # pin to the version you actually run locally
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Setup tflint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Run tflint
+        run: |
+          tflint --init
+          tflint
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -no-color -input=false -detailed-exitcode -out=tfplan
+          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Show plan text
+        if: steps.plan.outputs.exitcode == 2
+        id: show
+        run: terraform show -no-color tfplan
+
+      - name: Comment plan on PR
+        if: steps.plan.outputs.exitcode == 2
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `#### Terraform Plan — Attack Lab 📖
+            \`\`\`
+            ${{ steps.show.outputs.stdout }}
+            \`\`\``;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+      - name: Fail if plan errored
+        if: steps.plan.outputs.exitcode == 1
+        run: exit 1
