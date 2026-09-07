@@ -31,6 +31,12 @@ variable "admin_password" {
   sensitive   = true
 }
 
+variable "computer_name" {
+  type        = string
+  description = "Windows NetBIOS computer name (max 15 chars). Leave null to let the provider auto-derive from vm_name — only safe when vm_name itself is <=15 chars."
+  default     = null
+}
+
 variable "subnet_id" {
   type        = string
   description = "The ID of the subnet where the NIC should connect"
